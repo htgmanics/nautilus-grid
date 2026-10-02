@@ -160,11 +160,18 @@
 .nautilus--reverse {
     transform-origin: calc(100% - var(--nautilus-eye)) var(--nautilus-eye);
 }
+/* Portrait transposes the grid (vertical-rl: inline runs down, block runs
+   right to left), so the eye moves to (1 − eye, eye); vertical-lr mirrors
+   that to (eye, eye). */
 .nautilus--portrait {
-    transform-origin: var(--nautilus-eye) calc(100% - var(--nautilus-eye));
+    transform-origin: calc(100% - var(--nautilus-eye)) var(--nautilus-eye);
 }
 .nautilus--portrait.nautilus--reverse {
-    transform-origin: calc(100% - var(--nautilus-eye)) calc(100% - var(--nautilus-eye));
+    transform-origin: var(--nautilus-eye) var(--nautilus-eye);
+}
+@container (aspect-ratio < 1) {
+    .nautilus--auto { transform-origin: calc(100% - var(--nautilus-eye)) var(--nautilus-eye); }
+    .nautilus--auto.nautilus--reverse { transform-origin: var(--nautilus-eye) var(--nautilus-eye); }
 }
 
 /* Sequential-hero: pre-rotate cell i's content by 90°·(i-1) so that

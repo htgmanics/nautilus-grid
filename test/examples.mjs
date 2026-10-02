@@ -5,7 +5,8 @@
  *
  *   1. every examples/*.html: every non-fill .nautilus__cell is square
  *      (|w − h| ≤ 0.6px), 100cqi inside every cell's content is that
- *      cell's width (portrait included), and the console has no errors
+ *      cell's width (portrait included), the zoom origin lies in the fill
+ *      cell (the eye), and the console has no errors
  *   2. infinite-zoom.html: freeze at lap end, commit, screenshot before and
  *      after — the reset must be pixel-invisible (≤ 10 differing pixels)
  *
@@ -61,6 +62,21 @@ const CQI = `(() => {
   return JSON.stringify({ bad });
 })()`;
 
+// The zoom origin must be the eye, which sits inside the fill cell. Catches a
+// transform-origin left behind by an orientation (portrait swapped it once).
+const EYE = `(() => {
+  const bad = [];
+  document.querySelectorAll(".nautilus:not(.nautilus--no-fill)").forEach((g, gi) => {
+    const cells = [...g.querySelectorAll(":scope > .nautilus__cell")];
+    if (cells.length < 5 || cells.length > 10 || getComputedStyle(g).transform !== "none" || !g.offsetWidth) return;
+    const [ox, oy] = getComputedStyle(g).transformOrigin.split(" ").map(parseFloat);
+    const box = g.getBoundingClientRect(), fill = cells[cells.length - 1].getBoundingClientRect();
+    const x = box.left + ox, y = box.top + oy;
+    if (x < fill.left || x > fill.right || y < fill.top || y > fill.bottom) bad.push(gi);
+  });
+  return JSON.stringify({ bad });
+})()`;
+
 try {
   ab("close");
 } catch {}
@@ -70,6 +86,8 @@ for (const file of readdirSync(EXAMPLES).filter((f) => f.endsWith(".html")).sort
   ab("wait", "1200");
   const { spirals, bad } = evalIn(SQUARES);
   check(bad.length === 0, `${file}: ${spirals} spirals, all cells square${bad.length ? " — NOT: " + bad.join(" ") : ""}`);
+  const eye = evalIn(EYE).bad;
+  check(eye.length === 0, `${file}: zoom origin at the eye${eye.length ? " — NOT spirals " + eye.join(" ") : ""}`);
   const cqi = evalIn(CQI).bad;
   check(cqi.length === 0, `${file}: cqi is the cell's width${cqi.length ? " — NOT: " + cqi.slice(0, 3).join(" ") : ""}`);
   const errors = (() => { try { return ab("console").split("\n").filter((l) => /error/i.test(l)); } catch { return []; } })();

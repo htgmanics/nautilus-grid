@@ -194,6 +194,23 @@ publish, in this order:
       content against the cell's width: before the fix gap.html and
       index.html fail (1100 ≠ 500 …), after it all pass. Not on GitHub yet;
       htgmanics.com carries a scoped override until its dependency moves.
+- [x] **Portrait zoom origin was swapped (found + fixed 2026-10-02,
+      htgmanics.com phone prototype).** `.nautilus--portrait` set the
+      origin to (eye, 1 − eye); transposing the landscape eye through
+      `vertical-rl` gives (1 − eye, eye), and (eye, eye) for portrait
+      reverse. `auto` had no portrait origin at all; added in its
+      `@container` block. Measured: the portfolio's About and project
+      tunnels, nested at φ⁴ about (27.64%, 72.36%), land exactly in the
+      portrait wedge (92, 390, 57 × 92 at 390 × 844). `check:examples` now
+      asserts every fill spiral's origin lies in its fill cell: before the
+      fix gap.html and index.html fail on their portrait spirals, after it
+      all pass. 932 B gz.
+- [ ] **`auto` on a scrolling page (from htgmanics.com, 2026-10-02).**
+      `auto` needs a size container, and a page column isn't one (its
+      height comes from its content), so stacked page spirals never go
+      portrait. The portfolio switches on the viewport instead
+      (`@media (aspect-ratio < 1)` repeating the portrait rules). Candidate:
+      a viewport-driven modifier, or document the media-query recipe.
 - [ ] **Docs pitfall (found 2026-09-30):** `cqi` in styles on the
       `.nautilus__cell` itself resolves against the *spiral* (an element
       can't query its own container); only descendants of `__cell` get the
