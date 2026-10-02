@@ -159,6 +159,29 @@ publish, in this order:
       `forwardRef` as legacy. The peer range is `react >=17`, so either
       bump the peer to 19 or keep `forwardRef` until 17/18 support is dropped.
       Decide before 0.1.0: changing it after is a types change for users.
+- [ ] **Corner radius, stacked-spiral gap, fill-cell hook (from
+      htgmanics.com, 2026-10-02).** Three things the portfolio built on top
+      of the engine; decide before 0.1.0 which become API (adding later is
+      fine, renaming is not):
+      1. `--nautilus-radius`: owner locked 3px gap + 6px squircle corners on
+         every spiral. Done as a `clip-path: shape()` redraw of the gap
+         inset, one cubic per corner, handles at (1 − k)·r with k = 0.07
+         (closest to native `corner-shape: squircle`: 184 px differ on
+         240px boxes, r 60, vs 2232 for a circle). r clamped to
+         `50% − gap/2` for the eye cells. `corner-shape` can't do it: it
+         shapes only `border-radius`, which the gap clip cuts off (0 px
+         change on `inset(… round)`). Square inset stays the fallback
+         where `shape()` is missing. Source:
+         `htgmanics.com/src/app/globals.css`.
+      2. Level-scaled gap for stacked spirals: a spiral nested at φ⁴ per
+         level divides gap and radius by its on-screen scale, and a
+         registered `--zoom-progress` animated with the zoom transform keeps
+         the on-screen gap constant every frame (3.00 px at every sample,
+         zoom frames avg 16.7 ms). Belongs with a future `<Tunnel>`.
+      3. Fill-cell hook: the fill cell is φ wider than a square cell, so
+         content sized in cell-relative units needs a different scale there
+         (portfolio sets `--v: 1cqi` on fill content by hand). An `is-fill`
+         class or a per-cell scale variable would save that.
 - [ ] **Docs pitfall (found 2026-09-30):** `cqi` in styles on the
       `.nautilus__cell` itself resolves against the *spiral* (an element
       can't query its own container); only descendants of `__cell` get the
