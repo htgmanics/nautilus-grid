@@ -4,7 +4,8 @@
  * test suite: a layout bug here is a number, not an opinion.
  *
  *   1. every examples/*.html: every non-fill .nautilus__cell is square
- *      (|w − h| ≤ 0.6px) and the console has no errors
+ *      (|w − h| ≤ 0.6px), 100cqi inside every cell's content is that
+ *      cell's width (portrait included), and the console has no errors
  *   2. infinite-zoom.html: freeze at lap end, commit, screenshot before and
  *      after — the reset must be pixel-invisible (≤ 10 differing pixels)
  *
@@ -43,6 +44,23 @@ const SQUARES = `(() => {
   return JSON.stringify({ spirals: document.querySelectorAll(".nautilus").length, bad });
 })()`;
 
+// A probe in each content: 100cqi must resolve against its own cell, whatever
+// the spiral's writing-mode.
+const CQI = `(() => {
+  const bad = [];
+  document.querySelectorAll(".nautilus__content").forEach((content, i) => {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:absolute;width:100cqi;height:0";
+    content.append(probe);
+    // Layout widths: zoom scales the container and heroRotate turns content.
+    const width = content.closest(".nautilus__cell").offsetWidth;
+    const got = probe.offsetWidth;
+    probe.remove();
+    if (width > 0 && Math.abs(got - width) > 1) bad.push(i + ":" + got + "≠" + width);
+  });
+  return JSON.stringify({ bad });
+})()`;
+
 try {
   ab("close");
 } catch {}
@@ -52,6 +70,8 @@ for (const file of readdirSync(EXAMPLES).filter((f) => f.endsWith(".html")).sort
   ab("wait", "1200");
   const { spirals, bad } = evalIn(SQUARES);
   check(bad.length === 0, `${file}: ${spirals} spirals, all cells square${bad.length ? " — NOT: " + bad.join(" ") : ""}`);
+  const cqi = evalIn(CQI).bad;
+  check(cqi.length === 0, `${file}: cqi is the cell's width${cqi.length ? " — NOT: " + cqi.slice(0, 3).join(" ") : ""}`);
   const errors = (() => { try { return ab("console").split("\n").filter((l) => /error/i.test(l)); } catch { return []; } })();
   check(errors.length === 0, `${file}: console clean${errors.length ? " — " + errors[0] : ""}`);
 

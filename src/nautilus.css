@@ -52,8 +52,12 @@
        layout; the content padding below keeps content inside it. */
     clip-path: inset(calc(var(--nautilus-gap) / 2));
     transition: var(--nautilus-transition);
-    /* Real per-cell container: cqi inside content means this cell's width. */
-    container-type: inline-size;
+    /* Real per-cell container: cqi inside content means this cell's width.
+       Size, not inline-size: a portrait cell is vertical-rl, so inline-size
+       would contain only its vertical axis and horizontal content's cqi
+       would skip the cell. Cells are sized by their grid area, never by
+       content, so containing both axes costs nothing. */
+    container-type: size;
 }
 
 .nautilus__content {

@@ -182,6 +182,18 @@ publish, in this order:
          content sized in cell-relative units needs a different scale there
          (portfolio sets `--v: 1cqi` on fill content by hand). An `is-fill`
          class or a per-cell scale variable would save that.
+- [x] **Portrait cells: `cqi` skipped the cell (found + fixed 2026-10-02,
+      htgmanics.com menu on a phone).** A portrait / `auto` spiral is
+      `vertical-rl`, so the cell's `container-type: inline-size` contained
+      only its vertical axis; horizontal content's `cqi` skipped the cell and
+      resolved against the next size container (the 390px page: a menu title
+      at 93.6px instead of 57.8). Fix: `container-type: size` on
+      `.nautilus__cell`. Cells are sized by their grid area, never content,
+      so both-axis containment changes no layout: every example cell still
+      square, 924 B gz. `check:examples` now probes `100cqi` in every cell's
+      content against the cell's width: before the fix gap.html and
+      index.html fail (1100 ≠ 500 …), after it all pass. Not on GitHub yet;
+      htgmanics.com carries a scoped override until its dependency moves.
 - [ ] **Docs pitfall (found 2026-09-30):** `cqi` in styles on the
       `.nautilus__cell` itself resolves against the *spiral* (an element
       can't query its own container); only descendants of `__cell` get the
